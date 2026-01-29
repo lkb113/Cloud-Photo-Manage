@@ -1,0 +1,10 @@
+
+localstack/
+venv/
+__pycache__/
+*.pyc
+*.db
+*.sqlite
+.env
+test_photo.jpg
+images.db
