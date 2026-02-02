@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Photo App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- En-tête -->
+        <header>
+            <h1>Cloud Photo App</h1>
+            <p>Uploadez et gérez vos images dans le cloud</p>
+        </header>
+
+        <!-- Section Upload -->
+        <section class="upload-section">
+            <h2>Upload une image</h2>
+            <form id="uploadForm">
+                <input type="file" id="fileInput" accept="image/*" required>
+                <button type="submit">Uploader</button>
+            </form>
+            <div id="uploadStatus"></div>
+        </section>
+
+        <!-- Section Galerie -->
+        <section class="gallery-section">
+            <h2>Mes images</h2>
+            <button id="refreshBtn">Rafraîchir</button>
+            <div id="gallery"></div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

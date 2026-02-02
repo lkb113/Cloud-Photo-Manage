@@ -1,0 +1,152 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #66e6ea 0%, #a24b8b 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    color: white;
+    margin-bottom: 40px;
+}
+
+header h1 {
+    font-size: 3em;
+    margin-bottom: 10px;
+}
+
+header p {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+.upload-section,
+.gallery-section {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+h2 {
+    color: #000000;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+/* Formulaire d'upload */
+#uploadForm {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#fileInput {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    font-size: 1em;
+}
+
+button {
+    padding: 12px 30px;
+    background: #c3c3c3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+button:hover {
+    background: #4d4d4d;
+}
+
+#uploadStatus {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+#uploadStatus.success {
+    background: #d4edda;
+    color: #155724;
+}
+
+#uploadStatus.error {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Bouton rafraîchir */
+#refreshBtn {
+    margin-bottom: 20px;
+}
+
+/* Galerie d'images */
+#gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.image-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
+}
+
+.image-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.image-info {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.image-info p {
+    margin: 5px 0;
+}
+
+.image-filename {
+    font-weight: bold;
+    color: #333;
+    word-break: break-word;
+}
+
+.empty-message {
+    text-align: center;
+    color: #999;
+    font-size: 1.2em;
+    padding: 40px;
+}
+
