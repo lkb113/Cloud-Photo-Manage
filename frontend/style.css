@@ -174,7 +174,7 @@ button:hover {
 
 /* Styles du mode nuit */
 body.dark-mode {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    background: linear-gradient(135deg, #042e4d 0%, #064974 100%);
 }
 
 body.dark-mode .upload-section,
@@ -188,14 +188,14 @@ body.dark-mode h2 {
 }
 
 body.dark-mode #fileInput {
-    background: #1a1a2e;
+    background: #042e4d;
     border-color: #00d4ff;
     color: white;
 }
 
 body.dark-mode button {
     background: #00d4ff;
-    color: #0f3460;
+    color: #064974;
 }
 
 body.dark-mode button:hover {
@@ -203,7 +203,7 @@ body.dark-mode button:hover {
 }
 
 body.dark-mode .image-card {
-    background: #1a1a2e;
+    background: #042e4d;
     color: #e0e0e0;
 }
 
@@ -217,7 +217,7 @@ body.dark-mode .image-filename {
 
 body.dark-mode #uploadStatus.success {
     background: #1e4620;
-    color: #7dff8b;
+    color: #2fd43f;
 }
 
 body.dark-mode #uploadStatus.error {
