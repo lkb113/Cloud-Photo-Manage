@@ -7,7 +7,8 @@ import os
 
 # Import database
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from backend.database import add_image, get_images
+from lambda_function.resize import resize_image
+from backend.database import add_image, get_images, update_thumbnail
 
 app = FastAPI()
 
@@ -37,7 +38,10 @@ async def upload_image(file: UploadFile = File(...)):
     s3_client.put_object(Bucket=BUCKET_NAME, Key=file.filename, Body=contents)
     url = f"http://localhost:4566/{BUCKET_NAME}/{file.filename}"
     add_image(file.filename, url, len(contents))
-    return {"message": "uploaded", "filename": file.filename}
+    thumbnail_url = resize_image(file.filename)
+    if thumbnail_url:
+        update_thumbnail(file.filename, thumbnail_url)
+    return {"message": "uploaded", "filename": file.filename, "thumbnail_url": thumbnail_url}
 
 # GET /images
 @app.get("/images")

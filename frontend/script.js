@@ -86,7 +86,7 @@ async function loadImages() {
                 : `${(img.size / (1024 * 1024)).toFixed(2)} MB`;
             
             card.innerHTML = `
-                <img src="${img.original_url}" alt="${img.filename}">
+                <img src="${img.original_url}" alt="${img.filename}" onclick="window.open('${img.original_url}', '_blank')">
                 <div class="image-info">
                     <p class="image-filename">${img.filename}</p>
                     <p>${date}</p>

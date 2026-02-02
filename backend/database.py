@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS images (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     filename TEXT UNIQUE NOT NULL,
     original_url TEXT NOT NULL,
+    thumbnail_url TEXT,
     upload_date TEXT NOT NULL,
     size INTEGER NOT NULL
 )
@@ -30,3 +31,12 @@ def add_image(filename, url, size):
 def get_images():
     cursor.execute('SELECT * FROM images')
     return cursor.fetchall()
+
+# Mettre à jour l'URL de la miniature
+def update_thumbnail(filename, thumbnail_url):
+    cursor.execute('''
+    UPDATE images
+    SET thumbnail_url = ?
+    WHERE filename = ?
+    ''', (thumbnail_url, filename))
+    conn.commit()
