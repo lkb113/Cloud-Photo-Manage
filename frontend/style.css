@@ -150,3 +150,77 @@ button:hover {
     padding: 40px;
 }
 
+.delete-btn {
+    width: 100%;
+    margin-top: 10px;
+    padding: 8px;
+    background: #e74c3c;
+    font-size: 0.9em;
+}
+
+.delete-btn:hover {
+    background: #c0392b;
+}
+/* Bouton mode nuit */
+#darkModeToggle {
+    margin-top: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid white;
+}
+
+#darkModeToggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Styles du mode nuit */
+body.dark-mode {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+body.dark-mode .upload-section,
+body.dark-mode .gallery-section {
+    background: #0f3460;
+    color: #e0e0e0;
+}
+
+body.dark-mode h2 {
+    color: #00d4ff;
+}
+
+body.dark-mode #fileInput {
+    background: #1a1a2e;
+    border-color: #00d4ff;
+    color: white;
+}
+
+body.dark-mode button {
+    background: #00d4ff;
+    color: #0f3460;
+}
+
+body.dark-mode button:hover {
+    background: #00a8cc;
+}
+
+body.dark-mode .image-card {
+    background: #1a1a2e;
+    color: #e0e0e0;
+}
+
+body.dark-mode .image-info {
+    color: #b0b0b0;
+}
+
+body.dark-mode .image-filename {
+    color: #ffffff;
+}
+
+body.dark-mode #uploadStatus.success {
+    background: #1e4620;
+    color: #7dff8b;
+}
+
+body.dark-mode #uploadStatus.error {
+    background: #4a1616;
+    color: #ff7d7d;
+}

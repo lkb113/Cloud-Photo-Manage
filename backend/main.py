@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from backend.database import conn, cursor
 import boto3
 import sys
 import os
@@ -42,3 +43,18 @@ async def upload_image(file: UploadFile = File(...)):
 @app.get("/images")
 def list_images():
     return [dict(img) for img in get_images()]
+
+# DELETE /images/{filename} - Supprimer une image
+@app.delete("/images/{filename}")
+def delete_image(filename: str):
+    try:
+        # Supprimer de S3
+        s3_client.delete_object(Bucket=BUCKET_NAME, Key=filename)
+        
+        # Supprimer de la BDD
+        cursor.execute('DELETE FROM images WHERE filename = ?', (filename,))
+        conn.commit()
+        
+        return {"message": "Image deleted", "filename": filename}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")

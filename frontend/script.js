@@ -91,6 +91,7 @@ async function loadImages() {
                     <p class="image-filename">${img.filename}</p>
                     <p>${date}</p>
                     <p>${size}</p>
+                    <button class="delete-btn" onclick="deleteImage('${img.filename}')">Supprimer</button>
                 </div>
             `;
             
@@ -102,6 +103,50 @@ async function loadImages() {
     }
 }
 
+// Fonction pour supprimer une image
+async function deleteImage(filename) {
+    if (!confirm(`Voulez-vous vraiment supprimer "${filename}" ?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/images/${filename}`, {
+            method: 'DELETE'
+        });
+        
+        if (response.ok) {
+            alert(`Image "${filename}" supprimée`);
+            loadImages(); // Recharger la galerie
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (error) {
+        alert('Erreur de connexion');
+        console.error('Erreur:', error);
+    }
+}
+
+// Mode nuit
+const darkModeToggle = document.getElementById('darkModeToggle');
+
+// Charger la préférence sauvegardée
+if (localStorage.getItem('darkMode') === 'enabled') {
+    document.body.classList.add('dark-mode');
+    darkModeToggle.textContent = 'Mode Jour';
+}
+
+// Toggle mode nuit
+darkModeToggle.addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+    
+    if (document.body.classList.contains('dark-mode')) {
+        darkModeToggle.textContent = 'Mode Jour';
+        localStorage.setItem('darkMode', 'enabled');
+    } else {
+        darkModeToggle.textContent = 'Mode Nuit';
+        localStorage.setItem('darkMode', 'disabled');
+    }
+});
 
 // Bouton rafraîchir
 refreshBtn.addEventListener('click', loadImages);
