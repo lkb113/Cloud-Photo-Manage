@@ -1,6 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from backend.database import conn, cursor
+from backend.database import conn, cursor, add_image, get_images, update_thumbnail
 import boto3
 import sys
 import os
@@ -19,7 +19,7 @@ images_uploaded = Counter('images_uploaded_total', 'Nombre total d\'images uploa
 thumbnails_created = Counter('thumbnails_created_total', 'Nombre total de miniatures créées')
 images_deleted = Counter('images_deleted_total', 'Nombre total d\'images supprimées')
 upload_size_bytes = Histogram('upload_size_bytes', 'Taille des images uploadées en bytes', buckets=[1024, 10240, 102400, 1048576, 10485760])
-api_latency = Histogram{'api_request_duration_seconds', 'Latence des requêtes API en secondes', buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.0]}
+api_latency = Histogram('api_request_duration_seconds', 'Latence des requêtes API en secondes', buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.0])
 total_images = Gauge('total_images_stored', 'Nombre total d\'images stockées dans la base de données') 
 
 app = FastAPI()
@@ -49,31 +49,70 @@ BUCKET_NAME = 'cloud-photo-bucket'
 # POST /upload
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
-    contents = await file.read()
-    s3_client.put_object(Bucket=BUCKET_NAME, Key=file.filename, Body=contents)
-    url = f"http://localhost:4566/{BUCKET_NAME}/{file.filename}"
-    add_image(file.filename, url, len(contents))
-    thumbnail_url = resize_image(file.filename)
-    if thumbnail_url:
-        update_thumbnail(file.filename, thumbnail_url)
-    return {"message": "uploaded", "filename": file.filename, "thumbnail_url": thumbnail_url}
+    start_time = time.time()
+    try:
+        contents = await file.read()
+        file_size = len(contents)
+        s3_client.put_object(Bucket=BUCKET_NAME, Key=file.filename, Body=contents)
+        url = f"http://localhost:4566/{BUCKET_NAME}/{file.filename}"
+        add_image(file.filename, url, len(contents))
+        thumbnail_url = resize_image(file.filename)
+        if thumbnail_url:
+            update_thumbnail(file.filename, thumbnail_url)
+            thumbnails_created.inc()
+            images_uploaded.inc()
+            upload_size_bytes.observe(file_size)
+            total_images.set(len(get_images()))
+            duration = time.time() - start_time
+            api_latency.observe(duration)
+        return {"message": "uploaded", "filename": file.filename, "thumbnail_url": thumbnail_url}
+    except Exception as e:
+        duration = time.time() - start_time
+        api_latency.observe(duration)
+        raise e
 
 # GET /images
 @app.get("/images")
 def list_images():
-    return [dict(img) for img in get_images()]
+    start_time = time.time()
+    try:
+        result = [dict(img) for img in get_images()]
+        total_images.set(len(result))
+        duration = time.time() - start_time
+        api_latency.observe(duration)
+        return result
+    except Exception as e:
+        duration = time.time() - start_time
+        api_latency.observe(duration)
+        raise e
 
 # DELETE /images/{filename} - Supprimer une image
 @app.delete("/images/{filename}")
 def delete_image(filename: str):
+    start_time = time.time()
     try:
         # Supprimer de S3
         s3_client.delete_object(Bucket=BUCKET_NAME, Key=filename)
         
+        # Suppprimer la miniature
+        name, ext = os.path.splitext(filename)
+        thumbnail_filename = f"{name}_thumbnail{ext}"
+        try: 
+            s3_client.delete_object(Bucket=BUCKET_NAME, Key=thumbnail_filename)
+        except:
+            pass
+
         # Supprimer de la BDD
         cursor.execute('DELETE FROM images WHERE filename = ?', (filename,))
         conn.commit()
-        
+
+        # Mettre à jour les métriques
+        images_deleted.inc()
+        total_images.set(len(get_images()))
+        duration = time.time() - start_time
+        api_latency.observe(duration)
         return {"message": "Image deleted", "filename": filename}
     except Exception as e:
+        duration = time.time() - start_time
+        api_latency.observe(duration)
         raise HTTPException(status_code=500, detail=f"Delete failed: {str(e)}")
