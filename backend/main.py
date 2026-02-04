@@ -1,27 +1,55 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from backend.database import conn, cursor, add_image, get_images, update_thumbnail
+from backend.database import (
+    conn,
+    cursor,
+    add_image,
+    get_images,
+    update_thumbnail)
 import boto3
 import sys
 import os
-from prometheus_client import Counter, generate_latest, Histogram, Gauge, CONTENT_TYPE_LATEST
+from prometheus_client import (
+    Counter,
+    generate_latest,
+    Histogram,
+    Gauge,
+    CONTENT_TYPE_LATEST)
 from fastapi.responses import Response
 import time
-
-# Import database
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-# Import de la fonction de redimensionnement
 from lambda_function.resize import resize_image
 from backend.database import add_image, get_images, update_thumbnail
 
+# Import database
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Métriques Prometheus
-images_uploaded = Counter('images_uploaded_total', 'Nombre total d\'images uploadées')
-thumbnails_created = Counter('thumbnails_created_total', 'Nombre total de miniatures créées')
-images_deleted = Counter('images_deleted_total', 'Nombre total d\'images supprimées')
-upload_size_bytes = Histogram('upload_size_bytes', 'Taille des images uploadées en bytes', buckets=[1024, 10240, 102400, 1048576, 10485760])
-api_latency = Histogram('api_request_duration_seconds', 'Latence des requêtes API en secondes', buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.0])
-total_images = Gauge('total_images_stored', 'Nombre total d\'images stockées dans la base de données') 
+images_uploaded = Counter(
+    'images_uploaded_total',
+    'Nombre total d\'images uploadées'
+    )
+thumbnails_created = Counter(
+    'thumbnails_created_total',
+    'Nombre total de miniatures créées'
+    )
+images_deleted = Counter(
+    'images_deleted_total',
+    'Nombre total d\'images supprimées'
+    )
+upload_size_bytes = Histogram(
+    'upload_size_bytes',
+    'Taille des images uploadées en bytes',
+    buckets=[1024, 10240, 102400, 1048576, 10485760]
+    )
+api_latency = Histogram(
+    'api_request_duration_seconds',
+    'Latence des requêtes API en secondes',
+    buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.0]
+    )
+total_images = Gauge(
+    'total_images_stored',
+    'Nombre total d\'images stockées dans la base de données'
+    )
 
 app = FastAPI()
 
@@ -33,10 +61,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Endpoint métriques
 @app.get("/metrics")
 def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
 
 # Client S3
 s3_client = boto3.client(
@@ -50,6 +80,7 @@ s3_client = boto3.client(
 # Nom du bucket
 BUCKET_NAME = 'cloud-photo-bucket'
 
+
 # Upload image
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
@@ -59,7 +90,11 @@ async def upload_image(file: UploadFile = File(...)):
         contents = await file.read()
         file_size = len(contents)
         # Upload vers S3
-        s3_client.put_object(Bucket=BUCKET_NAME, Key=file.filename, Body=contents)
+        s3_client.put_object(
+            Bucket=BUCKET_NAME,
+            Key=file.filename,
+            Body=contents
+            )
         # Ajouter à la BDD
         url = f"http://localhost:4566/{BUCKET_NAME}/{file.filename}"
         add_image(file.filename, url, len(contents))
@@ -76,12 +111,17 @@ async def upload_image(file: UploadFile = File(...)):
             duration = time.time() - start_time
             api_latency.observe(duration)
 
-        return {"message": "uploaded", "filename": file.filename, "thumbnail_url": thumbnail_url}
-    
+        return {
+            "message": "uploaded",
+            "filename": file.filename,
+            "thumbnail_url": thumbnail_url
+            }
+
     except Exception as e:
         duration = time.time() - start_time
         api_latency.observe(duration)
         raise e
+
 
 # Liste images
 @app.get("/images")
@@ -98,6 +138,7 @@ def list_images():
         api_latency.observe(duration)
         raise e
 
+
 # Supprimer une image
 @app.delete("/images/{filename}")
 def delete_image(filename: str):
@@ -105,13 +146,13 @@ def delete_image(filename: str):
     try:
         # Supprimer de S3
         s3_client.delete_object(Bucket=BUCKET_NAME, Key=filename)
-        
+
         # Suppprimer la miniature
         name, ext = os.path.splitext(filename)
         thumbnail_filename = f"{name}_thumbnail{ext}"
-        try: 
+        try:
             s3_client.delete_object(Bucket=BUCKET_NAME, Key=thumbnail_filename)
-        except:
+        except Exception:
             pass
 
         # Supprimer de la BDD
@@ -124,6 +165,7 @@ def delete_image(filename: str):
         duration = time.time() - start_time
         api_latency.observe(duration)
         return {"message": "Image deleted", "filename": filename}
+
     except Exception as e:
         duration = time.time() - start_time
         api_latency.observe(duration)
