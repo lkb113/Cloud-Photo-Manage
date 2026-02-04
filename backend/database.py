@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS images (
 ''')
 conn.commit()
 
+
 # Ajouter une image
 def add_image(filename, url, size):
     cursor.execute('''
@@ -27,10 +28,12 @@ def add_image(filename, url, size):
     ''', (filename, url, datetime.utcnow().isoformat(), size))
     conn.commit()
 
+
 # Lister les images
 def get_images():
     cursor.execute('SELECT * FROM images')
     return cursor.fetchall()
+
 
 # Mettre à jour l'URL de la miniature
 def update_thumbnail(filename, thumbnail_url):
