@@ -10,11 +10,12 @@ import time
 
 # Import database
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Import de la fonction de redimensionnement
 from lambda_function.resize import resize_image
 from backend.database import add_image, get_images, update_thumbnail
 
 
-
+# Métriques Prometheus
 images_uploaded = Counter('images_uploaded_total', 'Nombre total d\'images uploadées')
 thumbnails_created = Counter('thumbnails_created_total', 'Nombre total de miniatures créées')
 images_deleted = Counter('images_deleted_total', 'Nombre total d\'images supprimées')
@@ -31,11 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Endpoint métriques
 @app.get("/metrics")
 def metrics():
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
-# S3
+# Client S3
 s3_client = boto3.client(
     's3',
     endpoint_url='http://localhost:4566',
@@ -44,19 +47,26 @@ s3_client = boto3.client(
     region_name='us-east-1'
 )
 
+# Nom du bucket
 BUCKET_NAME = 'cloud-photo-bucket'
 
-# POST /upload
+# Upload image
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
     start_time = time.time()
     try:
+        # Lecture du fichier
         contents = await file.read()
         file_size = len(contents)
+        # Upload vers S3
         s3_client.put_object(Bucket=BUCKET_NAME, Key=file.filename, Body=contents)
+        # Ajouter à la BDD
         url = f"http://localhost:4566/{BUCKET_NAME}/{file.filename}"
         add_image(file.filename, url, len(contents))
+        # Création de la miniature
         thumbnail_url = resize_image(file.filename)
+
+        # Mettre à jour la BDD et les métriques
         if thumbnail_url:
             update_thumbnail(file.filename, thumbnail_url)
             thumbnails_created.inc()
@@ -65,13 +75,15 @@ async def upload_image(file: UploadFile = File(...)):
             total_images.set(len(get_images()))
             duration = time.time() - start_time
             api_latency.observe(duration)
+
         return {"message": "uploaded", "filename": file.filename, "thumbnail_url": thumbnail_url}
+    
     except Exception as e:
         duration = time.time() - start_time
         api_latency.observe(duration)
         raise e
 
-# GET /images
+# Liste images
 @app.get("/images")
 def list_images():
     start_time = time.time()
@@ -86,7 +98,7 @@ def list_images():
         api_latency.observe(duration)
         raise e
 
-# DELETE /images/{filename} - Supprimer une image
+# Supprimer une image
 @app.delete("/images/{filename}")
 def delete_image(filename: str):
     start_time = time.time()
