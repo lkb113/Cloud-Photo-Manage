@@ -4,11 +4,23 @@ from backend.database import conn, cursor
 import boto3
 import sys
 import os
+from prometheus_client import Counter, generate_latest, Histogram, Gauge, CONTENT_TYPE_LATEST
+from fastapi.responses import Response
+import time
 
 # Import database
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lambda_function.resize import resize_image
 from backend.database import add_image, get_images, update_thumbnail
+
+
+
+images_uploaded = Counter('images_uploaded_total', 'Nombre total d\'images uploadées')
+thumbnails_created = Counter('thumbnails_created_total', 'Nombre total de miniatures créées')
+images_deleted = Counter('images_deleted_total', 'Nombre total d\'images supprimées')
+upload_size_bytes = Histogram('upload_size_bytes', 'Taille des images uploadées en bytes', buckets=[1024, 10240, 102400, 1048576, 10485760])
+api_latency = Histogram{'api_request_duration_seconds', 'Latence des requêtes API en secondes', buckets=[0.01, 0.05, 0.1, 0.5, 1.0, 2.0]}
+total_images = Gauge('total_images_stored', 'Nombre total d\'images stockées dans la base de données') 
 
 app = FastAPI()
 
@@ -19,6 +31,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+@app.get("/metrics")
+def metrics():
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 # S3
 s3_client = boto3.client(
