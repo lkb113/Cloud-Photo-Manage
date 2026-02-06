@@ -11,5 +11,5 @@ scrape_configs:
   # Notre API FastAPI
   - job_name: 'fastapi'
     static_configs:
-      - targets: ['host.docker.internal:8000']
+      - targets: ['172.17.0.1:8000']
     metrics_path: '/metrics'
