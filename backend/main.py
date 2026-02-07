@@ -1,3 +1,14 @@
+"""
+API REST pour la gestion d'images avec stockage S3 et monitoring Prometheus.
+
+Endpoints:
+    POST /upload: Upload image + création miniature
+    GET /images: Liste toutes les images
+    DELETE /images/{filename}: Supprime une image
+    GET /metrics: Métriques Prometheus
+"""
+
+
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from backend.database import (
@@ -62,9 +73,14 @@ app.add_middleware(
 )
 
 
-# Endpoint métriques
 @app.get("/metrics")
 def metrics():
+    """
+    Expose les métriques Prometheus (appelé automatiquement toutes les 15s).
+
+    Returns:
+        Response: Métriques au format Prometheus
+    """
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 
@@ -81,9 +97,17 @@ s3_client = boto3.client(
 BUCKET_NAME = os.getenv('S3_BUCKET_NAME', 'cloud-photo-bucket')
 
 
-# Upload image
 @app.post("/upload")
 async def upload_image(file: UploadFile = File(...)):
+    """
+    Upload une image et crée automatiquement une miniature 300x300.
+
+    Args:
+        file: Fichier image à uploader
+
+    Returns:
+        dict: Message de succès avec filename et thumbnail_url
+    """
     start_time = time.time()
     try:
         # Lecture du fichier
@@ -123,9 +147,14 @@ async def upload_image(file: UploadFile = File(...)):
         raise e
 
 
-# Liste images
 @app.get("/images")
 def list_images():
+    """
+    Récupère la liste de toutes les images stockées.
+
+    Returns:
+        list: Images avec métadonnées (id, filename, urls, date, size)
+    """
     start_time = time.time()
     try:
         result = [dict(img) for img in get_images()]
@@ -139,9 +168,17 @@ def list_images():
         raise e
 
 
-# Supprimer une image
 @app.delete("/images/{filename}")
 def delete_image(filename: str):
+    """
+    Supprime une image et sa miniature de S3 et de la BDD.
+
+    Args:
+        filename: Nom du fichier à supprimer
+
+    Returns:
+        dict: Message de confirmation
+    """
     start_time = time.time()
     try:
         # Supprimer de S3
