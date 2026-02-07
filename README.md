@@ -7,9 +7,9 @@ Application web de gestion d'images avec architecture cloud simulée localement 
 ## Description
 Ce projet simule une architecture cloud moderne pour stocker et gérer des images avec traitement automatique et monitoring en temps réel.
 
-## 🏗️ Architecture
+## Architecture
 
-![Architecture](ARCHITECTURE.md)
+[Architecture](ARCHITECTURE.md)
 
 ### Composants
 
@@ -106,13 +106,13 @@ python3 -m http.server 5500
 
 ## Accès aux interfaces
 
-| Service | URL | Credentials |
-|---------|-----|-------------|
-| **Frontend** | http://127.0.0.1:5500 | - |
-| **API** | http://127.0.0.1:8000 | - |
-| **API Docs** | http://127.0.0.1:8000/docs | - |
-| **Prometheus** | http://127.0.0.1:9090 | - |
-| **Grafana** | http://127.0.0.1:3000 | admin/admin |
+| Service | URL |
+|---------|-----|
+| **Frontend** | http://127.0.0.1:5500 |
+| **API** | http://127.0.0.1:8000 |
+| **API Docs** | http://127.0.0.1:8000/docs |
+| **Prometheus** | http://127.0.0.1:9090 |
+| **Grafana** | http://127.0.0.1:3000 |
 
 ## Endpoints
 
