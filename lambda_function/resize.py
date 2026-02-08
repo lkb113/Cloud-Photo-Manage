@@ -17,6 +17,22 @@ THUMBNAIL_SIZE = (300, 300)
 
 
 def resize_image(filename):
+    """
+    Redimensionne une image en miniature 300x300 pixels.
+
+    Télécharge l'image depuis S3, la redimensionne en conservant
+    les proportions, puis upload la miniature dans S3.
+
+    Args:
+        filename (str): Nom du fichier image à redimensionner
+
+    Returns:
+        str: URL de la miniature créée, ou None en cas d'erreur
+
+    Example:
+        >>> resize_image('photo.jpg')
+        'http://localhost:4566/cloud-photo-bucket/photo_thumb.jpg'
+    """
     try:
         # Télécharger l'image
         response = s3_client.get_object(Bucket=BUCKET_NAME, Key=filename)
@@ -61,5 +77,6 @@ def resize_image(filename):
 
 
 if __name__ == "__main__":
+    """Point d'entrée pour tester la fonction directement."""
     result = resize_image("test.jpg")
     print(f"Résultat : {result}")
