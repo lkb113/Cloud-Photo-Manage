@@ -9,7 +9,17 @@ Ce projet simule une architecture cloud moderne pour stocker et gérer des image
 
 ## Architecture
 
-[Architecture](ARCHITECTURE.md)
+Voir le [schéma d'architecture détaillé](ARCHITECTURE.md)
+
+### Flux de traitement
+```
+Upload → API → S3 (original) → BDD (métadonnées) 
+                ↓
+            Lambda (resize)
+                ↓
+            S3 (miniature 300x300)
+                ↓
+            BDD (update thumbnail_url)
 
 ### Composants
 
@@ -45,6 +55,24 @@ Ce projet simule une architecture cloud moderne pour stocker et gérer des image
   - Taille des images
   - Total d'images stockées
 
+## Technologies utilisées
+
+### Backend
+- **FastAPI** : Framework API REST
+- **Boto3** : Client AWS/S3
+- **Pillow** : Traitement d'images
+- **SQLite** : Base de données
+- **Prometheus Client** : Métriques
+
+### Frontend
+- **HTML5/CSS3/JavaScript** : Interface utilisateur
+- **Fetch API** : Communication API
+
+### Infrastructure
+- **Docker Compose** : Orchestration de containers
+- **LocalStack** : Simulation AWS
+- **Prometheus** : Collecte de métriques
+- **Grafana** : Visualisation
 ## Installation
 
 ### Prérequis
@@ -100,10 +128,6 @@ cd frontend
 python3 -m http.server 5500
 ```
 
-9. **Accéder à l'application**
-   - Frontend : http://localhost:5500
-   - API Documentation : http://localhost:8000/docs
-
 ## Accès aux interfaces
 
 | Service | URL |
@@ -115,15 +139,44 @@ python3 -m http.server 5500
 | **Grafana** | http://127.0.0.1:3000 |
 
 ## Endpoints
+Upload une image et crée automatiquement une miniature.
 
-- `POST /upload` : Upload une image
-- `GET /images` : Liste toutes les images
-- `DELETE /images/{filename}` : Supprime une image
+**Exemple** :
+```bash
+curl -X POST "http://127.0.0.1:8000/upload" \
+  -F "file=@photo.jpg"
+```
 
+**Réponse** :
+```json
+{
+  "message": "uploaded",
+  "filename": "photo.jpg",
+  "thumbnail_url": "http://localhost:4566/cloud-photo-bucket/photo_thumb.jpg"
+}
+```
+
+### GET /images
+Liste toutes les images avec leurs métadonnées.
+
+**Exemple** :
+```bash
+curl http://127.0.0.1:8000/images
+```
+
+### DELETE /images/{filename}
+Supprime une image et sa miniature.
+
+**Exemple** :
+```bash
+curl -X DELETE "http://127.0.0.1:8000/images/photo.jpg"
+```
 
 ### Dashboard Grafana
 
 ![Grafana Dashboard](screenshots/grafana-dashboard.png)
+
+**Connexion** : admin / admin (changez le mot de passe dans `.env`)
 
 Le dashboard "Cloud Photo App - Monitoring" affiche :
 1. **Images uploadées** : Évolution du nombre d'uploads
