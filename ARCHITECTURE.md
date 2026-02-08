@@ -1,5 +1,5 @@
 # Architecture du Projet
-
+![Diagramme](screenshots/Diagramme%20d'architecture%20S3TNA.png)
 ## Vue d'ensemble
 ```
 ┌─────────────────────────────────────────────────────────────┐
