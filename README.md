@@ -20,7 +20,7 @@ Upload → API → S3 (original) → BDD (métadonnées)
             S3 (miniature 300x300)
                 ↓
             BDD (update thumbnail_url)
-
+```
 ### Composants
 
 - **Frontend** : Interface web responsive (HTML/CSS/JS)
