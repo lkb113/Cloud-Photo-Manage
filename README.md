@@ -82,7 +82,7 @@ Upload → API → S3 (original) → BDD (métadonnées)
 
 1. **Cloner le projet**
 ```bash
-git clone git@rendu-git.etna-alternance.net:module-10141/activity-54892/group-1070826.git
+git clone git@github.com:lkb113/Cloud-Photo-Manage.git
 cd group-1070826
 ```
 2. Configurer les variables d'environnement
